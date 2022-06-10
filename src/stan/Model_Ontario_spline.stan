@@ -99,7 +99,7 @@ return ret;
 data {
 // number of week
 int T;
-// population in New York City
+// population
 int N;
 int l;
 // delay

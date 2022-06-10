@@ -1,4 +1,4 @@
-Model = "
+Model_2 = "
 functions{
 vector convolution(vector X, vector Yrev, int K) {
 vector[K-1] res;
@@ -12,7 +12,7 @@ res[k] = dot_product(head(X, k), tail(Yrev, k)); // by definition of the convolu
 data {
 // number of week
 int T;
-// population
+// population 
 int N;
 int num_data;
 // delay
@@ -26,16 +26,15 @@ vector[T+l] jt;
 real Gamma[T+l+delay];
 // serial interval
 real SI[T+l];
-// odds
+// odds_
 vector[T+l+delay] odds;
-//Variant A;
-real vA[T+l+delay];
-//Variant B;
-real vB[T+l+delay];
-//Variant C;
-real vC[T+l+delay];
-//Variant D ;
-real vD[T+l+delay];
+real others[T+l+delay];
+//VOC alpha;
+real alpha[T+l+delay];
+//VOC delta;
+real delta[T+l+delay];
+//VOC delta;
+real omicron[T+l+delay];
 }
 
 transformed data{
@@ -48,7 +47,7 @@ conv = convolution(it+jt, SI_rev, T+l);
 }
 
 parameters{
-real<lower=1,upper=2> p[4];
+real<lower=0,upper=2> p[4];
 real<lower=0> k[4];
 vector<lower=0>[T-1] Rit;
 vector<lower=0,upper=1>[T-1] eps;
@@ -57,6 +56,7 @@ real<lower=0> eta[1];
 
 transformed parameters{
 real<lower=0,upper=1> zeta[T+l+delay-1];
+//real<lower=0,upper=1> odds_p[T-1];
 vector<lower=0>[T-1] Rjt;
 
 for(s in 1:T+l+delay-1){
@@ -73,7 +73,7 @@ ve_reduction_a[t] = p[2] * (1-inv_logit(k[2]*(t-1)));
 ve_reduction_d[t] = p[3] * (1-inv_logit(k[3]*(t-1)));
 ve_reduction_om[t] = p[4] * (1-inv_logit(k[4]*(t-1)));
 vax_rev[t] = Gamma[s-t+1]; 
-convolution_r[t] = (vA[s] * ve_reduction_o[t] + vB[s] * ve_reduction_a[t] + vC[s] * ve_reduction_d[t] + vD[s] * ve_reduction_om[t]) * vax_rev[t];
+convolution_r[t] = (others[s] * ve_reduction_o[t] + alpha[s] * ve_reduction_a[t] + delta[s] * ve_reduction_d[t] + omicron[s] * ve_reduction_om[t]) * vax_rev[t];
 }
 zeta[s] = sum(convolution_r);
 }
@@ -82,9 +82,9 @@ Rjt[t] = odds[t+l+delay] * (1-eps[t]) * Rit[t];
 }
 
 model{ 
-for(t in 1:T-1)
-eps[t] ~ beta((eta[1]/sqrt(jt[t+l]+1e-3)) *zeta[t+l+delay],(eta[1]/sqrt(jt[t+l]+1e-3))-(eta[1]/sqrt(jt[t+l]+1e-3))*zeta[t+l+delay]);
-
+for(t in 1:T-1){
+eps[t] ~ beta((eta[1]/sqrt(jt[t+l])) *zeta[t+l+delay],(eta[1]/sqrt(jt[t+l]))-(eta[1]/sqrt(jt[t+l]))*zeta[t+l+delay]);
+}
 Rit ~ normal(0.5,1);
 k ~ normal(0,10);
 eta ~ normal(0,100);

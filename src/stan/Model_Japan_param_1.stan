@@ -1,4 +1,4 @@
-Model = "
+Model_1 = "
 functions{
 vector convolution(vector X, vector Yrev, int K) {
 vector[K-1] res;
@@ -23,19 +23,18 @@ vector[T+l] it;
 // vaccinated case
 vector[T+l] jt;
 // vaccination
-real Gamma[T+l+delay];
+vector[T+l+delay] Gamma;
 // serial interval
 real SI[T+l];
-// odds
+// odds_
 vector[T+l+delay] odds;
-//Variant A;
-real vA[T+l+delay];
-//Variant B;
-real vB[T+l+delay];
-//Variant C;
-real vC[T+l+delay];
-//Variant D ;
-real vD[T+l+delay];
+real others[T+l+delay];
+//VOC alpha;
+real alpha[T+l+delay];
+//VOC delta;
+real delta[T+l+delay];
+//VOC delta;
+real omicron[T+l+delay];
 }
 
 transformed data{
@@ -48,11 +47,11 @@ conv = convolution(it+jt, SI_rev, T+l);
 }
 
 parameters{
-real<lower=1,upper=2> p[4];
 real<lower=0> k[4];
 vector<lower=0>[T-1] Rit;
 vector<lower=0,upper=1>[T-1] eps;
 real<lower=0> eta[1];
+real<lower=0,upper=1> c[4];
 }
 
 transformed parameters{
@@ -68,12 +67,12 @@ real vax_rev[s];
 real convolution_r[s];
 
 for(t in 1:s){                                   
-ve_reduction_o[t] = p[1] * (1-inv_logit(k[1]*(t-1)));
-ve_reduction_a[t] = p[2] * (1-inv_logit(k[2]*(t-1)));
-ve_reduction_d[t] = p[3] * (1-inv_logit(k[3]*(t-1)));
-ve_reduction_om[t] = p[4] * (1-inv_logit(k[4]*(t-1)));
+ve_reduction_o[t] = c[1] * exp(-k[1]*(t-1));
+ve_reduction_a[t] = c[2] * exp(-k[2]*(t-1));
+ve_reduction_d[t] = c[3] * exp(-k[3]*(t-1));
+ve_reduction_om[t] = c[4] * exp(-k[4]*(t-1));
 vax_rev[t] = Gamma[s-t+1]; 
-convolution_r[t] = (vA[s] * ve_reduction_o[t] + vB[s] * ve_reduction_a[t] + vC[s] * ve_reduction_d[t] + vD[s] * ve_reduction_om[t]) * vax_rev[t];
+convolution_r[t] = (others[s] * ve_reduction_o[t] + alpha[s] * ve_reduction_a[t] + delta[s] * ve_reduction_d[t] + omicron[s] * ve_reduction_om[t]) * vax_rev[t];
 }
 zeta[s] = sum(convolution_r);
 }
@@ -83,10 +82,10 @@ Rjt[t] = odds[t+l+delay] * (1-eps[t]) * Rit[t];
 
 model{ 
 for(t in 1:T-1)
-eps[t] ~ beta((eta[1]/sqrt(jt[t+l]+1e-3)) *zeta[t+l+delay],(eta[1]/sqrt(jt[t+l]+1e-3))-(eta[1]/sqrt(jt[t+l]+1e-3))*zeta[t+l+delay]);
-
+eps[t] ~ beta((eta[1]/sqrt(jt[t+l])) *zeta[t+l+delay],(eta[1]/sqrt(jt[t+l]))-(eta[1]/sqrt(jt[t+l]))*zeta[t+l+delay]);
 Rit ~ normal(0.5,1);
 k ~ normal(0,10);
+c ~ beta(5,2);
 eta ~ normal(0,100);
 target += gamma_lpdf(it[1+l+1:T+l] | Rit .* conv[1+l:T+l-1] + 1e-13, 1.0) + gamma_lpdf(jt[1+l+1:T+l] | Rjt .* conv[1+l:T+l-1] + 1e-13, 1.0);
 }
@@ -98,11 +97,12 @@ real ve_d[num_data];
 real ve_om[num_data];
 real ii[T-1];
 real jj[T-1];
+
 for(t in 1:num_data){
-ve_o[t] = p[1] * (1-inv_logit(k[1]*(t-1)));
-ve_a[t] = p[2] * (1-inv_logit(k[2]*(t-1)));
-ve_d[t] = p[3] * (1-inv_logit(k[3]*(t-1)));
-ve_om[t] = p[4] * (1-inv_logit(k[4]*(t-1)));
+ve_o[t] = c[1] * exp(-k[1]*(t-1));
+ve_a[t] = c[2] * exp(-k[2]*(t-1));
+ve_d[t] = c[3] * exp(-k[3]*(t-1));
+ve_om[t] = c[4] * exp(-k[4]*(t-1));
 }
 for(t in 1:T-1){
 ii[t] = Rit[t] * conv[t+l];

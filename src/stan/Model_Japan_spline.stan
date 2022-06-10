@@ -1,4 +1,4 @@
-Model_1 = "
+Model_s = "
 functions{
 vector convolution(vector X, vector Yrev, int K) {
 vector[K-1] res;
@@ -47,7 +47,7 @@ for (i in 1:n-2){
 M[i+1,i] = hi[i+1];
 M[i,i+1] = hi[i+1];
 }
-zs = mdivide_left_spd(M, ui);
+zs = inverse(M) * ui;
     
 ret[1]=0;
 ret[n_nodes] =0;
@@ -114,10 +114,14 @@ vector[T+l+delay] Gamma;
 real SI[T+l];
 // odds
 vector[T+l+delay] odds;
-real vA[T+l+delay];
-real vB[T+l+delay];
-real vC[T+l+delay];
-real vD[T+l+delay];
+//VOC others;
+real others[T+l+delay];
+//VOC alpha;
+real alpha[T+l+delay];
+//VOC delta;
+real delta[T+l+delay];
+//VOC omicron;
+real omicron[T+l+delay];
 int num_data;   // number of data points
 int nknots;
 vector[num_data] X;
@@ -139,11 +143,10 @@ conv = convolution(it+jt, SI_rev, T+l);
 parameters{
 vector<lower=0>[T-1] Rit;
 // the parameters of our spline model are the values at the knots
-//vector[nknots] yknots_om;
+vector[nknots] yknots_om;
 vector[nknots] yknots_o;
 vector[nknots] yknots_a;
 vector[nknots] yknots_d;
-vector[nknots] yknots_om;
 vector<lower=0,upper=1>[T-1] eps;
 real<lower=0> eta[1];
 }
@@ -151,19 +154,20 @@ real<lower=0> eta[1];
 transformed parameters{
 real zeta[T+l+delay-1];
 vector<lower=0>[T-1] Rjt;
+vector[nknots] spl_coeffs_om = spline_getcoeffs(nknots, xknots, yknots_om);
 vector[nknots] spl_coeffs_o = spline_getcoeffs(nknots, xknots, yknots_o);
 vector[nknots] spl_coeffs_a = spline_getcoeffs(nknots, xknots, yknots_a);
 vector[nknots] spl_coeffs_d = spline_getcoeffs(nknots, xknots, yknots_d);
-vector[nknots] spl_coeffs_om = spline_getcoeffs(nknots, xknots, yknots_om);
+vector[num_data] nc_om = spline_eval(nknots, xknots, yknots_om, spl_coeffs_om, num_data, X, x_pos_knots);
 vector[num_data] nc_o = spline_eval(nknots, xknots, yknots_o, spl_coeffs_o, num_data, X, x_pos_knots);
 vector[num_data] nc_a = spline_eval(nknots, xknots, yknots_a, spl_coeffs_a, num_data, X, x_pos_knots);
 vector[num_data] nc_d = spline_eval(nknots, xknots, yknots_d, spl_coeffs_d, num_data, X, x_pos_knots);
-vector[num_data] nc_om = spline_eval(nknots, xknots, yknots_om, spl_coeffs_om, num_data, X, x_pos_knots);
-real ve_reduction_o[T+l+delay-1];
-real ve_reduction_a[T+l+delay-1];
-real ve_reduction_d[T+l+delay-1];
-real ve_reduction_om[T+l+delay-1];
+
 for(s in 1:(T+l+delay-1)){
+real ve_reduction_om[s];
+real ve_reduction_o[s];
+real ve_reduction_a[s];
+real ve_reduction_d[s];
 real vax_rev[s];
 real convolution_r[s];
 for(t in 1:s){
@@ -172,7 +176,7 @@ ve_reduction_a[t] = inv_logit(nc_a[t]);
 ve_reduction_d[t] = inv_logit(nc_d[t]);
 ve_reduction_om[t] = inv_logit(nc_om[t]);
 vax_rev[t] = Gamma[s-t+1]; 
-convolution_r[t] = (vA[s] * ve_reduction_o[t] + vB[s] * ve_reduction_a[t] + vC[s] * ve_reduction_d[t] + vD[s] * ve_reduction_om[t]) * vax_rev[t];
+convolution_r[t] = (others[s] * ve_reduction_o[t] + alpha[s] * ve_reduction_a[t] + delta[s] * ve_reduction_d[t] + omicron[s] * ve_reduction_om[t]) * vax_rev[t];
 }
 zeta[s] = sum(convolution_r);
 }
@@ -182,17 +186,17 @@ Rjt[t] =  odds[t+l+delay] * (1-eps[t]) * Rit[t];
 }
 
 model{ 
-for(t in 1:T-1)
+for(t in 1:T-1){
 eps[t] ~ beta((eta[1]/sqrt(jt[t+l])) *zeta[t+l+delay],(eta[1]/sqrt(jt[t+l]))-(eta[1]/sqrt(jt[t+l]))*zeta[t+l+delay]);
-
-target += gamma_lpdf(it[1+l+1:T+l] | Rit .* conv[1+l:T+l-1] + 1e-13, 1.0) + gamma_lpdf(jt[1+l+1:T+l] | Rjt .* conv[1+l:T+l-1] + 1e-13, 1.0);
+}
+target += gamma_lpdf(it[1+l:T+l-1] | Rit .* conv[1+l:T+l-1] + 1e-13, 1.0) + gamma_lpdf(jt[1+l:T+l-1] | Rjt .* conv[1+l:T+l-1] + 1e-13, 1.0);
 
 inv_logit(yknots_o) ~ beta(5,2);
 inv_logit(yknots_a) ~ beta(5,2);
 inv_logit(yknots_d) ~ beta(5,2);
 inv_logit(yknots_om) ~ beta(5,2);
 Rit ~ normal(0.5,1);
-eta ~ normal(0,100);
+eta ~ normal(0,200);
 }
 
 generated quantities{
@@ -202,18 +206,12 @@ real ve_d[num_data];
 real ve_om[num_data];
 real ii[T-1];
 real jj[T-1];
-vector[T-1] log_lik;
-
 for(t in 1:num_data){
 ve_o[t] = inv_logit(nc_o[t]);
 ve_a[t] = inv_logit(nc_a[t]);
 ve_d[t] = inv_logit(nc_d[t]);
 ve_om[t] = inv_logit(nc_om[t]);
 }
-
-for (n in 1:T-1) log_lik[n] = gamma_lpdf(it[n+l+1] | Rit * conv[n+l] + 1e-13, 1.0) + gamma_lpdf(jt[n+l+1] | Rjt * conv[n+l] + 1e-13, 1.0)
-                          + beta_lpdf(eps[n] | (eta[1]/sqrt(jt[n+l])) *zeta[n+l+delay],(eta[1]/sqrt(jt[n+l]))-(eta[1]/sqrt(jt[n+l]))*zeta[n+l+delay]);
-
 for(t in 1:T-1){
 ii[t] = Rit[t] * conv[t+l];
 jj[t] = Rjt[t] * conv[t+l];
