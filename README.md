@@ -1,4 +1,4 @@
-# On the estimation of waning vaccine effectiveness from population-level surveillance data under multi-variant epidemics
+# Estimating waning vaccine effectiveness from population-level surveillance data in multi-variant epidemics
 Source code accompanying Murayama et al. "On the estimation of waning vaccine effectiveness from population-level surveillance data under multi-variant epidemics". 
 
 ## Licence
