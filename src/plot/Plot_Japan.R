@@ -43,18 +43,15 @@ omicron_plot <- omicron_ve %>% ggplot() +
         panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
         legend.position = "right") + scale_x_continuous(breaks = seq(1, num_data, 4), limits=c(1, num_data)) +
   scale_y_continuous(breaks = seq(0, 100, 10), limits=c(0, 100)) + theme(legend.position=c(.2,.3),legend.background = element_rect(fill = "white", colour = "black")) 
-NN = 125708382
-scaling_parameter=max(overall_ve$vaccine*NN)/max(overall_ve$upper[!is.na(overall_ve$upper)])
-adj = 0.0095
-options(scipen=1000000)
+
 overall_plot <- overall_ve %>% ggplot() + 
-  geom_bar(aes(x=week, y=vaccine*NN),stat='identity', fill="darkseagreen", width=3) +
-  geom_line(aes(x = week, y = median*100*scaling_parameter*adj), color = "#756bb1", size = 1, alpha=1) +
-  geom_ribbon(aes(ymax=lower*100*scaling_parameter*adj, ymin=upper*100*scaling_parameter*adj, x=week), fill="#756bb1", alpha = 0.4) +
-  labs(x="Week after two doses of vaccination",y="Cumulative number of\
-       fully vaccinated individuals") +
-  ggtitle("Overall effect in Japan") + theme_bw() +
-  theme(text = element_text(size=15, family="sans",color="black"),axis.text.x = element_text(size=15, angle = 90, hjust = 1),axis.text.y = element_text(size=15),panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  geom_bar(aes(x=week, y=vaccine*100),stat='identity', fill="darkseagreen", width=3) +
+  geom_line(aes(x = week, y = median*100), color = "#756bb1", size = 1, alpha=1) +
+  geom_ribbon(aes(ymax=lower*100, ymin=upper*100, x=week), fill="#756bb1", alpha = 0.4) +
+  labs(x="Week after two doses of vaccination",y="Cumulative number of vaccination with two doses") +
+  ggtitle("Overall effect") + theme_bw() +
+  theme(text = element_text(size=15, family="sans",color="black"),axis.text.x = element_text(size=15, angle = 90, hjust = 1),axis.text.y = element_text(size=15),panel.grid.major =       element_blank(), panel.grid.minor = element_blank()) +
   scale_x_date(date_labels="%y/%m/%d",date_breaks  ="7 day", expand = c(0, 0)) +
-  scale_y_continuous(breaks=seq(0,NN,40000000),limit=c(0,NN), expand = c(0, 0),
-                     sec.axis = sec_axis(~./(scaling_parameter*adj), breaks=c(0,25,50,75,100), name="Overall effect of vaccie [%]"))
+  scale_y_continuous(expand = c(0, 0), limit=c(0,100),
+                     breaks=c(0,25,50,75,100), name="Overall effect of vaccine and\
+proportion of vaccinated individuals [%]")

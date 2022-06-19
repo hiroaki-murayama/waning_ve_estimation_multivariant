@@ -89,19 +89,20 @@ omicron_plot <- omicron_ve %>% ggplot() +
 
 
 scaling_parameter=max(overall_ve$vaccine)/max(overall_ve$upper[!is.na(overall_ve$upper)])
-adj = 0.0095
+adj = 0.008
 options(scipen=1000000)
 
 overall_plot <- overall_ve %>% ggplot() + 
-  geom_bar(aes(x=week, y=vaccine),stat='identity', fill="darkseagreen", width=3) +
-  geom_line(aes(x = week, y = median*100*scaling_parameter*adj), color = "#756bb1", size = 1, alpha=1) +
-  geom_ribbon(aes(ymax=lower*100*scaling_parameter*adj, ymin=upper*100*scaling_parameter*adj, x=week), fill="#756bb1", alpha = 0.4) +
+  geom_bar(aes(x=week, y=vaccine/N*100),stat='identity', fill="darkseagreen", width=3) +
+  geom_line(aes(x = week, y = median*100), color = "#756bb1", size = 1, alpha=1) +
+  geom_ribbon(aes(ymax=lower*100, ymin=upper*100, x=week), fill="#756bb1", alpha = 0.4) +
   labs(x="Week after two doses of vaccination",y="Cumulative number of vaccination with two doses") +
   ggtitle("Overall effect") + theme_bw() +
   theme(text = element_text(size=15, family="sans",color="black"),axis.text.x = element_text(size=15, angle = 90, hjust = 1),axis.text.y = element_text(size=15),panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
   scale_x_date(date_labels="%y/%m/%d",date_breaks  ="7 day", expand = c(0, 0)) +
-  scale_y_continuous(limit=c(0,N), expand = c(0, 0),
-                     sec.axis = sec_axis(~./(scaling_parameter*adj), breaks=c(0,25,50,75,100), name="Overall effect of vaccie [%]"))
+  scale_y_continuous(expand = c(0, 0), limit=c(0,100),
+                     breaks=c(0,25,50,75,100), name="Overall effect of vaccine and\
+proportion of vaccinated individuals [%]")
 
 
 voc_plot <- voc %>% ggplot() +
@@ -120,7 +121,7 @@ case_simulation <- df %>% ggplot() +
   scale_x_date(date_labels = "%y/%m/%d", date_breaks = "7 day", expand = c(0,0)) +
   scale_y_continuous(expand = c(0,0))+
   labs(x="Week", y="Incidence") +
-  ggtitle("Simulated incidence with COVID-19") + scale_fill_brewer(palette = "Paired") +
+  ggtitle("Simulated epidemic curve with vaccination status") + scale_fill_brewer(palette = "Paired") +
   theme_bw() + theme(axis.text.x = element_text(size=15, angle = 90, hjust = 1),axis.text.y = element_text(size=15)) +
   theme(text = element_text(size=20, family="sans",color="black"),
         axis.text = element_text(size=10, family="sans",color="black"),

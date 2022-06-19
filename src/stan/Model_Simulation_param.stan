@@ -8,7 +8,6 @@ res[k] = dot_product(head(X, k), tail(Yrev, k)); // by definition of the convolu
    return res;        
     }
 }
-
 data {
 // number of week
 int T;
@@ -37,36 +36,30 @@ real vC[T+l+delay];
 //Variant D ;
 real vD[T+l+delay];
 }
-
 transformed data{
 vector[T+l] SI_rev;
 vector[T+l-1] conv;
 for(h in 1:T+l)
 SI_rev[h] = SI[T+l-h+1];
-
 conv = convolution(it+jt, SI_rev, T+l);
 }
-
 parameters{
-real<lower=1,upper=2> p[4];
+real<lower=0,upper=2> p[4];
 real<lower=0> k[4];
 vector<lower=0>[T-1] Rit;
 vector<lower=0,upper=1>[T-1] eps;
 real<lower=0> eta[1];
 }
-
 transformed parameters{
 real<lower=0,upper=1> zeta[T+l+delay-1];
 vector<lower=0>[T-1] Rjt;
-
+real ve_reduction_o[T+l+delay-1];
+real ve_reduction_a[T+l+delay-1];
+real ve_reduction_d[T+l+delay-1];
+real ve_reduction_om[T+l+delay-1];
 for(s in 1:T+l+delay-1){
-real ve_reduction_o[s];
-real ve_reduction_a[s];
-real ve_reduction_d[s];
-real ve_reduction_om[s];
 real vax_rev[s];
 real convolution_r[s];
-
 for(t in 1:s){                                   
 ve_reduction_o[t] = p[1] * (1-inv_logit(k[1]*(t-1)));
 ve_reduction_a[t] = p[2] * (1-inv_logit(k[2]*(t-1)));
@@ -80,17 +73,15 @@ zeta[s] = sum(convolution_r);
 for(t in 1:T-1)
 Rjt[t] = odds[t+l+delay] * (1-eps[t]) * Rit[t];
 }
-
 model{ 
 for(t in 1:T-1)
 eps[t] ~ beta((eta[1]/sqrt(jt[t+l]+1e-3)) *zeta[t+l+delay],(eta[1]/sqrt(jt[t+l]+1e-3))-(eta[1]/sqrt(jt[t+l]+1e-3))*zeta[t+l+delay]);
-
 Rit ~ normal(0.5,1);
 k ~ normal(0,10);
+
 eta ~ normal(0,100);
 target += gamma_lpdf(it[1+l+1:T+l] | Rit .* conv[1+l:T+l-1] + 1e-13, 1.0) + gamma_lpdf(jt[1+l+1:T+l] | Rjt .* conv[1+l:T+l-1] + 1e-13, 1.0);
 }
-
 generated quantities{
 real ve_o[num_data];
 real ve_a[num_data];

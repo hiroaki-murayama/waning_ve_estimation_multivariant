@@ -45,7 +45,7 @@ conv = convolution(it+jt, SI_rev, T+l);
 }
 
 parameters{
-real<lower=1,upper=2> p[3];
+real<lower=0,upper=2> p[3];
 real<lower=0> k[3];
 vector<lower=0>[T-1] Rit;
 vector<lower=0,upper=1>[T-1] eps;
