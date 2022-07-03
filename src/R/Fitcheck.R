@@ -28,7 +28,7 @@ u_param_plot <- ggplot(u_pred, aes(x=Week-2, y=case, fill=Type)) + scale_fill_br
         axis.text = element_text(size=18, family="sans",color="black"),
         panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
         legend.position = "none") + #geom_text(aes(label = age), size = 2, hjust = 0.5, vjust = 3, position = "stack")  + 
-  scale_x_date(date_labels="%y/%m/%d",date_breaks  ="7 day", expand = c(0, 0)) 
+  scale_x_date(date_labels="%d/%m/%y",date_breaks  ="7 day", expand = c(0, 0)) + guides(fill=guide_legend(""))
 
 v_param_plot <- ggplot(v_pred, aes(x=Week-2, y=case, fill=Type)) + scale_fill_brewer(palette = "Paired") + labs(x="Date", y="Vaccinated incidence") + ggtitle("Comparison between observed incidence and predicted estimates") +
   geom_bar(stat='identity', position='dodge') +  theme(axis.text.x = element_text(angle = 90, hjust = 1)) + geom_errorbar(aes(ymin=lower,ymax=upper),width=1,position=position_dodge(4.5)) +
@@ -36,4 +36,4 @@ v_param_plot <- ggplot(v_pred, aes(x=Week-2, y=case, fill=Type)) + scale_fill_br
         axis.text = element_text(size=18, family="sans",color="black"),
         panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
         legend.position = "none") + #geom_text(aes(label = age), size = 2, hjust = 0.5, vjust = 3, position = "stack")  + 
-  scale_x_date(date_labels="%y/%m/%d",date_breaks  ="7 day", expand = c(0, 0)) 
+  scale_x_date(date_labels="%d/%m/%y",date_breaks  ="7 day", expand = c(0, 0)) + guides(fill=guide_legend(""))

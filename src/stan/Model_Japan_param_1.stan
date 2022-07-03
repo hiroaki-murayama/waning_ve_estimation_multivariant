@@ -77,16 +77,16 @@ convolution_r[t] = (others[s] * ve_reduction_o[t] + alpha[s] * ve_reduction_a[t]
 zeta[s] = sum(convolution_r);
 }
 for(t in 1:T-1)
-Rjt[t] = odds[t+l+delay] * (1-eps[t]) * Rit[t];
+Rjt[t] = odds[t+l+delay]  * (1-eps[t]) * Rit[t];
 }
 
 model{ 
-for(t in 1:T-1)
-eps[t] ~ beta((eta[1]/sqrt(jt[t+l])) *zeta[t+l+delay],(eta[1]/sqrt(jt[t+l]))-(eta[1]/sqrt(jt[t+l]))*zeta[t+l+delay]);
 Rit ~ normal(0.5,1);
 k ~ normal(0,10);
 c ~ beta(5,2);
 eta ~ normal(0,100);
+for(t in 1:T-1)
+eps[t] ~ beta((eta[1]*jt[t+l+1]) *zeta[t+l+delay],(eta[1]*jt[t+l+1]) -(eta[1]*jt[t+l+1]) *zeta[t+l+delay]);
 target += gamma_lpdf(it[1+l+1:T+l] | Rit .* conv[1+l:T+l-1] + 1e-13, 1.0) + gamma_lpdf(jt[1+l+1:T+l] | Rjt .* conv[1+l:T+l-1] + 1e-13, 1.0);
 }
 

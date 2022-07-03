@@ -187,7 +187,7 @@ Rjt[t] =  odds[t+l+delay] * (1-eps[t]) * Rit[t];
 
 model{ 
 for(t in 1:T-1){
-eps[t] ~ beta((eta[1]/sqrt(jt[t+l])) *zeta[t+l+delay],(eta[1]/sqrt(jt[t+l]))-(eta[1]/sqrt(jt[t+l]))*zeta[t+l+delay]);
+eps[t] ~ beta((eta[1]*jt[t+l+1]) *zeta[t+l+delay],(eta[1]*jt[t+l+1])-(eta[1]*jt[t+l+1])*zeta[t+l+delay]);
 }
 target += gamma_lpdf(it[1+l:T+l-1] | Rit .* conv[1+l:T+l-1] + 1e-13, 1.0) + gamma_lpdf(jt[1+l:T+l-1] | Rjt .* conv[1+l:T+l-1] + 1e-13, 1.0);
 

@@ -83,7 +83,7 @@ Rjt[t] = odds[t+l+delay] * (1-eps[t]) * Rit[t];
 
 model{ 
 for(t in 1:T-1){
-eps[t] ~ beta((eta[1]/sqrt(jt[t+l])) *zeta[t+l+delay],(eta[1]/sqrt(jt[t+l]))-(eta[1]/sqrt(jt[t+l]))*zeta[t+l+delay]);
+eps[t] ~ beta((eta[1]*jt[t+l+1]) *zeta[t+l+delay],(eta[1]*jt[t+l+1])-(eta[1]*jt[t+l+1])*zeta[t+l+delay]);
 }
 Rit ~ normal(0.5,1);
 k ~ normal(0,10);

@@ -1,4 +1,4 @@
-Model_1 = "
+Model_2 = "
 functions{
 vector convolution(vector X, vector Yrev, int K) {
 vector[K-1] res;
@@ -183,7 +183,7 @@ Rjt[t] =  odds[t+l+delay] * (1-eps[t]) * Rit[t];
 
 model{ 
 for(t in 1:T-1)
-eps[t] ~ beta((eta[1]/sqrt(jt[t+l])) *zeta[t+l+delay],(eta[1]/sqrt(jt[t+l]))-(eta[1]/sqrt(jt[t+l]))*zeta[t+l+delay]);
+eps[t] ~ beta((eta[1]*jt[t+l+1]) *zeta[t+l+delay],(eta[1]*jt[t+l+1])-(eta[1]*jt[t+l+1])*zeta[t+l+delay]);
 
 target += gamma_lpdf(it[1+l+1:T+l] | Rit .* conv[1+l:T+l-1] + 1e-13, 1.0) + gamma_lpdf(jt[1+l+1:T+l] | Rjt .* conv[1+l:T+l-1] + 1e-13, 1.0);
 
@@ -202,7 +202,6 @@ real ve_d[num_data];
 real ve_om[num_data];
 real ii[T-1];
 real jj[T-1];
-vector[T-1] log_lik;
 
 for(t in 1:num_data){
 ve_o[t] = inv_logit(nc_o[t]);
@@ -210,10 +209,6 @@ ve_a[t] = inv_logit(nc_a[t]);
 ve_d[t] = inv_logit(nc_d[t]);
 ve_om[t] = inv_logit(nc_om[t]);
 }
-
-for (n in 1:T-1) log_lik[n] = gamma_lpdf(it[n+l+1] | Rit * conv[n+l] + 1e-13, 1.0) + gamma_lpdf(jt[n+l+1] | Rjt * conv[n+l] + 1e-13, 1.0)
-                          + beta_lpdf(eps[n] | (eta[1]/sqrt(jt[n+l])) *zeta[n+l+delay],(eta[1]/sqrt(jt[n+l]))-(eta[1]/sqrt(jt[n+l]))*zeta[n+l+delay]);
-
 for(t in 1:T-1){
 ii[t] = Rit[t] * conv[t+l];
 jj[t] = Rjt[t] * conv[t+l];
