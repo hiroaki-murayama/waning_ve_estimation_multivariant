@@ -102,7 +102,7 @@ voc_plot <- case_voc %>% ggplot() +
   scale_x_continuous(breaks = seq(1, 73, 4), limits=c(0, 74), expand = c(0,0)) +
   scale_y_continuous(expand = c(0,0))+
   labs(x="Week", y="Proportion") +
-  ggtitle("Assumed proportion of variants") +
+  ggtitle("Simulated relative frequency of each variant") +
   theme_bw() + theme(axis.text.x = element_text(size=15, angle = 0, hjust = 1),axis.text.y = element_text(size=15)) + scale_fill_brewer(palette = "Paired") + 
     theme(text = element_text(size=20, family="sans",color="black"),
           axis.text = element_text(size=10, family="sans",color="black"),
@@ -113,7 +113,7 @@ case_simulation <- case_df_plot %>% ggplot() +
   scale_x_continuous(breaks = seq(1, 73, 4), limits=c(0, 74), expand = c(0,0)) +
   scale_y_continuous(expand = c(0,0))+
   labs(x="Week", y="Incidence") +
-  ggtitle("Simulated epidemic curve with vaccination status") + scale_fill_brewer(palette = "Paired") +
+  ggtitle("Simulated epidemic curve by vaccination status") + scale_fill_brewer(palette = "Paired") +
   theme_bw() + theme(axis.text.x = element_text(size=15, angle = 0, hjust = 1),axis.text.y = element_text(size=15)) +
     theme(text = element_text(size=20, family="sans",color="black"),
           axis.text = element_text(size=10, family="sans",color="black"),
