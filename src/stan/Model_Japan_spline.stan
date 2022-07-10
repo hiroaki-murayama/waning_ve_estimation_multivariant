@@ -112,8 +112,9 @@ vector[T+l] jt;
 vector[T+l+delay] Gamma;
 // serial interval
 real SI[T+l];
-// odds
-vector[T+l+delay] odds;
+// vaccine cumulative
+vector[T+l+delay] v_cumu;
+vector[T+l+delay] unv_cumu;
 //VOC others;
 real others[T+l+delay];
 //VOC alpha;
@@ -182,20 +183,20 @@ zeta[s] = sum(convolution_r);
 }
 
 for(t in 1:T-1)
-Rjt[t] =  odds[t+l+delay] * (1-eps[t]) * Rit[t];
+Rjt[t] = (1-eps[t]) * Rit[t];
 }
 
 model{ 
 for(t in 1:T-1){
 eps[t] ~ beta((eta[1]*jt[t+l+1]) *zeta[t+l+delay],(eta[1]*jt[t+l+1])-(eta[1]*jt[t+l+1])*zeta[t+l+delay]);
 }
-target += gamma_lpdf(it[1+l:T+l-1] | Rit .* conv[1+l:T+l-1] + 1e-13, 1.0) + gamma_lpdf(jt[1+l:T+l-1] | Rjt .* conv[1+l:T+l-1] + 1e-13, 1.0);
+target += gamma_lpdf(it[1+l:T+l-1] | unv_cumu[1+l+delay:T-1+l+delay] .* Rit .* conv[1+l:T+l-1] + 1e-13, 1.0) + gamma_lpdf(jt[1+l:T+l-1] | v_cumu[1+l+delay:T-1+l+delay] .* Rjt .* conv[1+l:T+l-1] + 1e-13, 1.0);
 
 inv_logit(yknots_o) ~ beta(5,2);
 inv_logit(yknots_a) ~ beta(5,2);
 inv_logit(yknots_d) ~ beta(5,2);
 inv_logit(yknots_om) ~ beta(5,2);
-Rit ~ normal(0.5,1);
+Rit ~ normal(1,2);
 eta ~ normal(0,200);
 }
 
@@ -213,8 +214,8 @@ ve_d[t] = inv_logit(nc_d[t]);
 ve_om[t] = inv_logit(nc_om[t]);
 }
 for(t in 1:T-1){
-ii[t] = Rit[t] * conv[t+l];
-jj[t] = Rjt[t] * conv[t+l];
+ii[t] = unv_cumu[t+l+delay] * Rit[t] * conv[t+l];
+jj[t] = v_cumu[t+l+delay] * Rjt[t] * conv[t+l];
 }
 }
 "

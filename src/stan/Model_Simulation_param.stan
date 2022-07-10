@@ -25,8 +25,9 @@ vector[T+l] jt;
 real Gamma[T+l+delay];
 // serial interval
 real SI[T+l];
-// odds
-vector[T+l+delay] odds;
+// vaccine cumulative
+vector[T+l+delay] v_cumu;
+vector[T+l+delay] unv_cumu;
 //Variant A;
 real vA[T+l+delay];
 //Variant B;
@@ -71,16 +72,16 @@ convolution_r[t] = (vA[s] * ve_reduction_o[t] + vB[s] * ve_reduction_a[t] + vC[s
 zeta[s] = sum(convolution_r);
 }
 for(t in 1:T-1)
-Rjt[t] = odds[t+l+delay] * (1-eps[t]) * Rit[t];
+Rjt[t] = (1-eps[t]) * Rit[t];
 }
 model{ 
 for(t in 1:T-1)
-eps[t] ~ beta((eta[1]*(jt[t+l+1])) *zeta[t+l+delay],(eta[1]*(jt[t+l+1]))-(eta[1]*(jt[t+l+1]))*zeta[t+l+delay]);
-Rit ~ normal(0.5,1);
+eps[t] ~ beta((eta[1]*(jt[t+l])) *zeta[t+l+delay],(eta[1]*(jt[t+l]))-(eta[1]*(jt[t+l]))*zeta[t+l+delay]);
+Rit ~ normal(1,2);
 k ~ normal(0,10);
 
 eta ~ normal(0,100);
-target += gamma_lpdf(it[1+l+1:T+l] | Rit .* conv[1+l:T+l-1] + 1e-13, 1.0) + gamma_lpdf(jt[1+l+1:T+l] | Rjt .* conv[1+l:T+l-1] + 1e-13, 1.0);
+target += gamma_lpdf(it[1+l+1:T+l] | unv_cumu[1+l+delay:T-1+l+delay] .* Rit .* conv[1+l:T+l-1] + 1e-13, 1.0) + gamma_lpdf(jt[1+l+1:T+l] | v_cumu[1+l+delay:T-1+l+delay] .*Rjt .* conv[1+l:T+l-1] + 1e-13, 1.0);
 }
 generated quantities{
 real ve_o[num_data];

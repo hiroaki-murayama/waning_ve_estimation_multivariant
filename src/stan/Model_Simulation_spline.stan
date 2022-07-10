@@ -112,8 +112,9 @@ vector[T+l] jt;
 vector[T+l+delay] Gamma;
 // serial interval
 real SI[T+l];
-// odds
-vector[T+l+delay] odds;
+// vaccine cumulative
+vector[T+l+delay] v_cumu;
+vector[T+l+delay] unv_cumu;
 real vA[T+l+delay];
 real vB[T+l+delay];
 real vC[T+l+delay];
@@ -139,7 +140,6 @@ conv = convolution(it+jt, SI_rev, T+l);
 parameters{
 vector<lower=0>[T-1] Rit;
 // the parameters of our spline model are the values at the knots
-//vector[nknots] yknots_om;
 vector[nknots] yknots_o;
 vector[nknots] yknots_a;
 vector[nknots] yknots_d;
@@ -178,20 +178,20 @@ zeta[s] = sum(convolution_r);
 }
 
 for(t in 1:T-1)
-Rjt[t] =  odds[t+l+delay] * (1-eps[t]) * Rit[t];
+Rjt[t] = (1-eps[t]) * Rit[t];
 }
 
 model{ 
 for(t in 1:T-1)
-eps[t] ~ beta((eta[1]*jt[t+l+1]) *zeta[t+l+delay],(eta[1]*jt[t+l+1])-(eta[1]*jt[t+l+1])*zeta[t+l+delay]);
+eps[t] ~ beta((eta[1]*jt[t+l]) *zeta[t+l+delay],(eta[1]*jt[t+l])-(eta[1]*jt[t+l])*zeta[t+l+delay]);
 
-target += gamma_lpdf(it[1+l+1:T+l] | Rit .* conv[1+l:T+l-1] + 1e-13, 1.0) + gamma_lpdf(jt[1+l+1:T+l] | Rjt .* conv[1+l:T+l-1] + 1e-13, 1.0);
+target += gamma_lpdf(it[1+l+1:T+l] | unv_cumu[1+l+delay:T-1+l+delay] .* Rit .* conv[1+l:T+l-1] + 1e-13, 1.0) + gamma_lpdf(jt[1+l+1:T+l] | v_cumu[1+l+delay:T-1+l+delay] .* Rjt .* conv[1+l:T+l-1] + 1e-13, 1.0);
 
 inv_logit(yknots_o) ~ beta(5,2);
 inv_logit(yknots_a) ~ beta(5,2);
 inv_logit(yknots_d) ~ beta(5,2);
 inv_logit(yknots_om) ~ beta(5,2);
-Rit ~ normal(0.5,1);
+Rit ~ normal(1,2);
 eta ~ normal(0,100);
 }
 
@@ -210,8 +210,8 @@ ve_d[t] = inv_logit(nc_d[t]);
 ve_om[t] = inv_logit(nc_om[t]);
 }
 for(t in 1:T-1){
-ii[t] = Rit[t] * conv[t+l];
-jj[t] = Rjt[t] * conv[t+l];
+ii[t] = unv_cumu[t+l+delay] * Rit[t] * conv[t+l];
+jj[t] = v_cumu[t+l+delay] * Rjt[t] * conv[t+l];
 }
 }
 "
