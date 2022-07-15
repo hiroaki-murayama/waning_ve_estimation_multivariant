@@ -4,7 +4,7 @@ Source code accompanying Murayama et al. "Estimating waning vaccine effectivenes
 [MIT](https://github.com/hiroaki-murayama/wane_ve_estimation_multivariant/blob/main/LICENSE)
 
 ## Dependencies
-* R ver. 4.0.3
+* R ver. 4.0.2
 * {rstan} ver. 2.21.2
 
 ## Authors
