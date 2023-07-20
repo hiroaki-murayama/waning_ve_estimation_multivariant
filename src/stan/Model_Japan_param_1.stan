@@ -84,7 +84,7 @@ Rjt[t] = (1-eps[t]) * Rit[t];
 model{ 
 Rit ~ normal(1,2);
 k ~ normal(0,10);
-c ~ beta(5,2);
+c ~ beta(5,2);//beta(4,3)
 eta ~ normal(0,100);
 for(t in 1:T-1)
 eps[t] ~ beta((eta[1]*jt[t+l+1]) *zeta[t+l+delay],(eta[1]*jt[t+l+1]) -(eta[1]*jt[t+l+1]) *zeta[t+l+delay]);
