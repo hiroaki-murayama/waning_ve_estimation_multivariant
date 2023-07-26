@@ -1,10 +1,10 @@
-# Estimating waning vaccine effectiveness from population-level surveillance data in multi-variant epidemics
+# Estimation of waning vaccine effectiveness from population-level surveillance data in multi-variant epidemics
 Source code accompanying Murayama et al. "Estimating waning vaccine effectiveness from population-level surveillance data in multi-variant epidemics". https://www.medrxiv.org/content/10.1101/2022.07.14.22277647v1
 ## Licence
 [MIT](https://github.com/hiroaki-murayama/wane_ve_estimation_multivariant/blob/main/LICENSE)
 
 ## Dependencies
-* R ver. 4.0.2
+* R ver. 4.1.0
 * {rstan} ver. 2.21.2
 
 ## Authors
