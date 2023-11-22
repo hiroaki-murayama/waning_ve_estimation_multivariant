@@ -10,4 +10,4 @@ Published in *Epidemics* doi: [10.1016/j.epidem.2023.100726](https://doi.org/10.
 * {rstan} ver. 2.21.2
 
 ## Authors
-[Hiroaki Murayama](https://github.com/hiroaki-murayama), [Akira Endo](https://github.com/akira-endo), and Shouto Yonekura.
+[Hiroaki Murayama](https://github.com/hiroaki-murayama), [Akira Endo](https://github.com/akira-endo) and Shouto Yonekura.
